@@ -1,9 +1,7 @@
-import hashlib
+from Crypto.Hash import SHA256
 
 input_ = input('Enter something to be hashed: ')
+hash_object = SHA256.new()
+hash_object.update(input_.encode('utf-8'))
 
-input_bytes = input_.encode('utf-8') #string into bytes
-result = hashlib.md5(input_bytes)
-
-print("The byte equivalent of hash is : ", end ="")
-print(result.digest())
+print("The hexadecimal representation of the hash is:", hash_object.hexdigest())
