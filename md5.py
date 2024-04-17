@@ -1,4 +1,10 @@
-from hashlib import sha256
+from Crypto.Hash import MD5
 
 input_ = input('Enter something to be hashed: ')
-print(sha256(input_.encode('utf-8')).hexdigest())
+
+hash_object = MD5.new()
+hash_object.update(input_.encode('utf-8'))
+
+print("The byte equivalent of hash is : ", end ="")
+print(hash_object.digest())
+
