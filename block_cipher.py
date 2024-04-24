@@ -12,7 +12,7 @@ class EncryptionWorker(threading.Thread):
 
         # self.cipher = DES.new(self.key, DES.MODE_EAX) for DES encryption
         if self.type == "DES":
-            self.key = get_random_bytes(8) # DES key must be either 8 bytes long
+            self.key = get_random_bytes(8) # DES key must be 8 bytes long
             self.cipher = DES.new(self.key, DES.MODE_EAX) # DES.MODE_EAX is a block cipher mode that provides authenticated encryption
         
         elif self.type == "AES":
