@@ -50,6 +50,7 @@ def distribute_keys(filename):
 # Test the key generation functions
 def test():
     rsa_private_key, rsa_public_key = generate_rsa_keys()
+    print("Generating Keys:")
     print(f"RSA Private Key: {binascii.hexlify(rsa_private_key.export_key())}")
     print(f"RSA Public Key: {binascii.hexlify(rsa_public_key.export_key())}")
 
@@ -64,10 +65,10 @@ def test():
     print(f"AES Key: {binascii.hexlify(aes_key)}")
 
     # Test key storage and distribution
-    rsa_private_key, rsa_public_key = generate_rsa_keys()
-    ecc_private_key, ecc_public_key = generate_ecc_keys()
-    des_key = generate_des_key()
-    aes_key = generate_aes_key()
+    # rsa_private_key, rsa_public_key = generate_rsa_keys()
+    # ecc_private_key, ecc_public_key = generate_ecc_keys()
+    # des_key = generate_des_key()
+    # aes_key = generate_aes_key()
 
     keys = {
         "RSA": {
@@ -81,7 +82,7 @@ def test():
         "DES": des_key,
         "AES": aes_key
     }
-
+    
     # Store keys
     store_keys(keys, 'keys.pkl')
 
