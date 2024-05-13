@@ -1,5 +1,5 @@
 import socket
-
+import authentication_module
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -19,8 +19,17 @@ while True:
 
     client_socket, addr = server_socket.accept()
     print('Got connection from', addr)
+    data = client_socket.recv(1024).decode()
+    # Split the received data into two parameters
+    username, password,type = data.split(',')
+    response=""
+    if type == "add":
+       response= authentication_module.signup(username,password)
+    elif type =="verify":
+       response= authentication_module.login(username,password)
 
-    #send and receive between two clients
+    client_socket.send(response.encode())
+
 
 
 

@@ -1,5 +1,5 @@
 import pyrebase
-import socket
+
 
 
 
@@ -58,15 +58,3 @@ if __name__ == "__main__":
                 else:
                     break
 
-        # would be server between 2 clients
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        host = socket.gethostname()
-        port = 12345
-        client_socket.connect((host, port))
-
-        msg = client_socket.recv(1024)
-
-       #send to server data
-        #receive from server
-
-        client_socket.close()
