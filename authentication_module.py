@@ -15,10 +15,8 @@ firebaseCon={
 firebase=pyrebase.initialize_app(firebaseCon)
 auth=firebase.auth()
 
-def login():
+def login(email,password):
     print("Log in..")
-    email = input("Enter email:")
-    password = input("Enter password:")
     try:
         user = auth.sign_in_with_email_and_password(email, password)
         print("Successfully logged in")
@@ -27,10 +25,8 @@ def login():
         print("invalid email or password")
         return 1
 
-def signup():
+def signup(email,password):
     print("sign up..")
-    email=input("Enter email:")
-    password=input("Enter password:")
     try:
         user = auth.create_user_with_email_and_password(email,password)
         print("account made successfully")
@@ -39,22 +35,5 @@ def signup():
         print("Email already exists")
         return 1
 
-ans= input("Are you a new user?[y/n]")
-if __name__ == "__main__":
-        if ans =='n':
-            while True:
-                flag1 = login()
-                if (flag1):
-                    print("please renter your credentials:")
-                    login()
-                else:
-                    break
-        elif ans =='y':
-            while True:
-                flag1 = signup()
-                if(flag1):
-                    print("please enter other email:")
-                    signup()
-                else:
-                    break
+
 

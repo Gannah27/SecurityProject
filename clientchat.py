@@ -15,7 +15,7 @@ class Client:
     def __init__(self,):
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((socket.gethostname(), self.PORT))
+        self.sock.connect(("localhost", self.PORT))
         msg = tkinter.Tk()
         msg.withdraw()
         self.nickname = simpledialog.askstring("Nickname", "Please Choose a nickname", parent=msg)
@@ -110,5 +110,5 @@ class Client:
                 print("connected to backup server")
 
 
-client = Client()
-client.start_chat()
+#client = Client()
+#client.start_chat()

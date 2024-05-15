@@ -2,23 +2,11 @@ import socket
 import threading
 import time
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host = socket.gethostname()
-server.bind((host,5560))
 
-server.listen()
 clients = []
 nicknames = []
 
-def update_backup():
-    try:
-        sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        sock.connect(("13.51.48.183",5561))
-        while True:
-            sock.send("backup".encode('utf-8'))
-            time.sleep(2)
-    except:
-        print("backup server not running")
+
 
 def broadcast(msg):
     for client in clients:
@@ -39,6 +27,11 @@ def handle(client):
             break
 
 def receive():
+    server= socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    host = "localhost"
+    server.bind((host, 5560))
+    server.listen()
     while True:
         client, address = server.accept()
         print(f"Connected with {str(address)}!")
@@ -63,7 +56,5 @@ def receive():
 
 
 receive_thread = threading.Thread(target=receive)
-backup_thread = threading.Thread(target=update_backup)
-backup_thread.start()
 receive_thread.start()
 print("server running")
