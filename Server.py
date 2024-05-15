@@ -2,6 +2,7 @@ from key_management_module import *
 import socket
 import threading
 import pickle
+import authentication_module
 import sys
 
 class Client:
@@ -45,9 +46,24 @@ class ClientThread(threading.Thread):
         self.csocket.send(data)
         self.csocket.send("".encode('utf-8'))
         self.csocket.close()
-        
-        
-        
+    def receivedata(self):
+        while True:
+            data = self.csocket.recv(1024).decode()
+            # Split the received data into two parameters
+            username, password, type = data.split(',')
+            response = ""
+            if type == "add":
+                response = authentication_module.signup(username, password)
+                self.csocket.send(response.encode())
+                if response:
+                    self.run()
+            elif type == "verify":
+                response = authentication_module.login(username, password)
+                self.csocket.send(response.encode())
+                self.csocket.close()
+
+
+
 
 host = "0.0.0.0"
 port = 12345
@@ -63,4 +79,4 @@ while True:
     server_socket.listen(4)
     print("Listening for incoming connections...")
     newClient = Client()
-
+    newClient.clientT.receivedata()
