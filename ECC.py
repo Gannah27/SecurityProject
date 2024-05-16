@@ -13,13 +13,13 @@ def generate_ecc_key():
 
 # Encrypt using public key
 def encrypt_message(message, key):
-    print(public_key.y)
+    #print(public_key.y)
 
-    ciphertext = key._encrypt(message.encode(),public_key.y)
+    ciphertext = key._encrypt(message.encode(),key.y)
     return ciphertext
 
 # Decrypt using private key
-def decrypt_message(ciphertext):
+def decrypt_message(ciphertext,key):
 
     plaintext = key._decrypt(ciphertext)
     return plaintext
