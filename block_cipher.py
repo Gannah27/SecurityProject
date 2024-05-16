@@ -4,48 +4,76 @@ from Crypto.Cipher import AES, DES
 from Crypto.Random import get_random_bytes
 
 class EncryptionWorker(threading.Thread):
-    def __init__(self, type, plaintext_queue, ciphertext_queue):
+    def __init__(self, type, plaintext_queue, ciphertext_queue, key):
         threading.Thread.__init__(self)
         self.plaintext_queue = plaintext_queue
         self.ciphertext_queue = ciphertext_queue
         self.type = type
+        self.key = key
 
-        # self.cipher = DES.new(self.key, DES.MODE_EAX) for DES encryption
         if self.type == "DES":
-            self.key = get_random_bytes(8) # DES key must be 8 bytes long
-            self.cipher = DES.new(self.key, DES.MODE_EAX) # DES.MODE_EAX is a block cipher mode that provides authenticated encryption
+            self.cipher = DES.new(self.key, DES.MODE_CFB)
+            self.iv = self.cipher.iv
         
         elif self.type == "AES":
-            self.key = get_random_bytes(16) # AES key must be either 16, 24, or 32 bytes long
-            self.cipher = AES.new(self.key, AES.MODE_EAX) # AES.MODE_EAX is a block cipher mode that provides authenticated encryption
+            self.cipher = AES.new(self.key, AES.MODE_CFB)
+            self.iv = self.cipher.iv
+            
     def run(self):
         while True:
-            plaintext = self.plaintext_queue.get() # get the plaintext from the plaintext queue
+            plaintext = self.plaintext_queue.get()
             if plaintext is None:
                 break
-            ciphertext, tag = self.cipher.encrypt_and_digest(plaintext.encode("utf8"))
-            self.ciphertext_queue.put((ciphertext, tag))
+            ciphertext = self.cipher.encrypt(plaintext.encode("utf8"))
+            print("Ciphertext before enqueue:", ciphertext)
+            self.ciphertext_queue.put((ciphertext, self.iv))
 
+class DecryptionWorker(threading.Thread):
+    def __init__(self, type, ciphertext_queue, decrypted_queue, key):
+        threading.Thread.__init__(self)
+        self.ciphertext_queue = ciphertext_queue
+        self.decrypted_queue = decrypted_queue
+        self.type = type
+        self.key = key
+            
+    def run(self):
+        while True:
+            ciphertext = self.ciphertext_queue.get()
+            if ciphertext is None:
+                break
+            ciphertext, iv = ciphertext
+            print("Ciphertext after dequeue:", ciphertext)
+            if self.type == "DES":
+                self.cipher = DES.new(self.key, DES.MODE_CFB, iv=iv)
+        
+            elif self.type == "AES":
+                self.cipher = AES.new(self.key, AES.MODE_CFB, iv=iv)
+            
+            decrypted_plaintext = self.cipher.decrypt(ciphertext)
+            self.decrypted_queue.put(decrypted_plaintext)
 
-plaintext_queue = queue.Queue()
-ciphertext_queue = queue.Queue()
+def main():
+    print("Starting...")
+    plaintext_queue = queue.Queue()
+    ciphertext_queue = queue.Queue()
 
-plaintext_queue.put("Hi there!")
-print("queue size: ", plaintext_queue.qsize())
-worker = EncryptionWorker("DES",plaintext_queue, ciphertext_queue)
-print("worker started")
-worker.start()
-x = ciphertext_queue.get()
-ciphertext, tag = x
+    plaintext_queue.put("Hi there!")
+    key = get_random_bytes(16)
+    worker = EncryptionWorker("AES", plaintext_queue, ciphertext_queue, key)
+    worker.start()
 
-print(type(ciphertext))
+    if ciphertext_queue.empty():
+        print("Ciphertext_queue is empty")
+    else:
+        print("Ciphertext_queue is not empty")
 
-# Decrypt ciphertext
-if worker.type == "DES":
-    cipher = DES.new(worker.key, DES.MODE_EAX, nonce=worker.cipher.nonce)
-elif worker.type == "AES":
-    cipher = AES.new(worker.key, AES.MODE_EAX, nonce=worker.cipher.nonce)
-decrypted_plaintext = cipher.decrypt_and_verify(ciphertext, tag)
+    decrypted_queue = queue.Queue()
+    print("Decrypting...")
+    worker_decrypt = DecryptionWorker("AES", ciphertext_queue, decrypted_queue, key)
+    worker_decrypt.start()
+    
+    decrypted_plaintext = decrypted_queue.get()
+    print("Decrypted:", decrypted_plaintext)
 
-# Print decrypted plaintext
-print("Decrypted:", decrypted_plaintext.decode("utf8"))
+if __name__ == "__main__":
+    main()
