@@ -21,23 +21,36 @@ class ClientThread(threading.Thread):
     def run(self):
         print("Connection from : ",self.ip,":",str(self.port))
 
-        rsa_private_key, rsa_public_key = generate_rsa_keys()
-        ecc_private_key, ecc_public_key = generate_ecc_keys()
-        
+        ecc_key, ecc_key_public, ecc_key_private = generate_ecc_key()
+        rsa_privatekey, rsa_publickey, q, e, Prime_1, Prime_2 = generate_rsa_keys()
 
         keys = {
             "RSA": {
-                "private": rsa_private_key.export_key(),
-                "public": rsa_public_key.export_key()
+                "private": rsa_privatekey,
+                "public": rsa_publickey,
+                "q": q,
+                "e": e,
+                "Prime_1": Prime_1,
+                "Prime_2": Prime_2
             },
             "ECC": {
-                "private": ecc_private_key.export_key(format='DER'),
-                "public": ecc_public_key.export_key(format='DER')
+                "key": ecc_key,
+                "private": ecc_key_private,
+                "public": ecc_key_public
             },
             "DES": des_key,
             "AES": aes_key
         }
 
+        ecc_key = keys["ECC"]["key"]
+        ecc_key_public = keys["ECC"]["public"]
+        ecc_key_private = keys["ECC"]["private"]
+        keys["ECC"] = {
+            "key": (ecc_key.p, ecc_key.g, ecc_key.y),
+            "public": (ecc_key_public.p, ecc_key_public.g, ecc_key_public.y),
+            "private": ecc_key_private
+        }
+        
         # Pickle the content
         data = pickle.dumps(keys)
         

@@ -17,7 +17,7 @@ class Client(threading.Thread):
         received_data = b""
         while True:
             try:
-                data = self.csocket.recv(2505)  # Receive data in chunks of 1024 bytes
+                data = self.csocket.recv(2505)  # Receive data in chunks of 2505 bytes
                 if not data:
                     print("Connection closed")
                     break

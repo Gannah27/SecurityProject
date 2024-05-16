@@ -24,16 +24,25 @@ def encryption(message,e,publickey):
 
 def decryption(message,privatekey,publickey):
     return pow(message,privatekey,publickey)
-Prime_1, Prime_2,publickey=generatepublicKey()
-q,e= coprime(Prime_1,Prime_2)
-privatekey=number.inverse(e,q)
-print(privatekey)
 
-message= int(input("Enter the message needed "))
-option = input("enter 1 for encryption 2 for decryption ")
-if option =="1":
-    encrypted_message= encryption(message,e,publickey)
-    print(encrypted_message)
-else:
-    decrypted_message= decryption(message,privatekey,publickey)
-    print(decrypted_message)
+def generate_rsa_keys():
+    Prime_1, Prime_2,publickey=generatepublicKey()
+    q,e= coprime(Prime_1,Prime_2)
+    privatekey=number.inverse(e,q)
+    return privatekey,publickey, q, e, Prime_1, Prime_2
+
+# Prime_1, Prime_2,publickey=generatepublicKey()
+# q,e= coprime(Prime_1,Prime_2)
+# privatekey=number.inverse(e,q)
+# print(privatekey)
+# publickey, privatekey, q, e, Prime_1, Prime_2 = generate_rsa_keys()
+
+# message= int(input("Enter the message needed "))
+# option = input("enter 1 for encryption 2 for decryption ")
+# if option =="1":
+#     encrypted_message= encryption(message,e,publickey)
+#     print(encrypted_message)
+# else:
+#     decrypted_message= decryption(message,privatekey,publickey)
+#     print(decrypted_message)
+
