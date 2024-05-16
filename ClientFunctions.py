@@ -7,6 +7,7 @@ from RSA import *
 from key_management_module import distribute_keys
 from block_cipher import *
 import queue
+from hash import * 
 
 
 class ClientSocket(threading.Thread):
@@ -54,12 +55,37 @@ class ClientSocket(threading.Thread):
 
     def decrypt_after_recieve(self,msg):
         if self.encryption == "RSA":
-            mess = rsa_decrypt(msg, self.keys["private"])
+            try:
+                mess = rsa_decrypt(msg, self.keys["private"])
+            except ValueError:
+                return ""
         else:
             print("Decrypting ", self.encryption, " message")
             mess = decrypt_message(self.encryption, self.keys, self.iv, msg)
-            mess = mess.decode('utf-8')
-        return mess
+            try:
+                mess = mess.decode('utf-8')
+            except UnicodeDecodeError:
+                print("Not a message for me")
+                return ""
+        
+
+        # Extract the original message and the hash   
+        original_message = mess[:-64]
+        received_hash = mess[-64:]
+        
+        # Hash the second half of the original message
+        half_length = len(original_message) // 2
+        last_half = original_message[half_length:]
+        calculated_hash = hash_string(last_half)
+
+        # Compare the received hash with the calculated hash
+        if received_hash == calculated_hash:
+            print("The hashes match.")
+        else:
+            print("The hashes do not match.")
+            return "The hashes do not match."
+
+        return original_message
     # def recieveFromServer(self):
     #     try:
     #         self.csocket.recv(self.size)
@@ -95,6 +121,7 @@ class MyGUI(QMainWindow):
         key = distribute_keys('client_keys.txt')
         self.keys=key[self.encryption]
         self.ClientSocketRec.encryption = self.encryption
+        self.ClientSocketRec.keys = self.keys
         
         if self.encryption == "AES":
             self.keys = self.keys[0]
@@ -128,6 +155,13 @@ class MyGUI(QMainWindow):
         print("Just closed the window!")
 
     def encrypt_before_send(self, msg):
+        # Hash the last half of the message
+        half_length = len(msg) // 2
+        hashed = hash_string(msg[half_length:])
+
+        # Concatenate the hashed last half to the message
+        msg += hashed
+
         if self.encryption == "RSA":
           print("RSA")
           mess= rsa_encrypt(msg,self.keys["public"])
