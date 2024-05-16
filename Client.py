@@ -1,9 +1,8 @@
 import socket
-import clientchat
 import pickle
-import chatserver
 import threading
 from key_management_module import *
+from ClientFunctions import *
 
 
 class Client(threading.Thread):
@@ -18,6 +17,7 @@ class Client(threading.Thread):
     def receive(self):
         received_data = b""
         while True:
+            try:
                 data = self.csocket.recv(4096)
                 if not data:
                     print("Connection closed")
@@ -73,6 +73,10 @@ if __name__ == "__main__":
             else:
                 print("Email already exists, please enter another email.")
     if flag:
-        key=distribute_keys("client_keys.txt")
-
-        clientchat.Client(key).start_chat()
+        # key=distribute_keys("client_keys.txt")
+        # newClient.csocket.close()
+        # MyGUI.Client(key).start_chat()
+        app = QApplication([])
+        window = MyGUI()
+        app.exec_()
+        

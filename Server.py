@@ -2,6 +2,7 @@ import socket
 import threading
 import authentication_module
 from key_management_module import *
+from chatserver import *
 
 
 class ClientThread(threading.Thread):
@@ -52,21 +53,18 @@ class ClientThread(threading.Thread):
         self.csocket.close()
 
     def send_keys(self):
-        rsa_private_key, rsa_public_key = generate_rsa_keys()
-        ecc_private_key, ecc_public_key = generate_ecc_keys()
+        # ecc_key, ecc_key_public, ecc_key_private = generate_ecc_key()
+        rsa_privatekey, rsa_publickey = generate_rsa_keys()
 
         keys = {
             "RSA": {
-                "private": rsa_private_key.export_key(),
-                "public": rsa_public_key.export_key()
-            },
-            "ECC": {
-                "private": ecc_private_key.export_key(format='DER'),
-                "public": ecc_public_key.export_key(format='DER')
+                "private": rsa_privatekey.export_key(),
+                "public": rsa_publickey.export_key()
             },
             "DES": des_key,
             "AES": aes_key
         }
+
 
         data = pickle.dumps(keys)
         self.csocket.sendall(data)
@@ -74,6 +72,7 @@ class ClientThread(threading.Thread):
 
 
 def start_server(host='localhost', port=12345):
+
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind((host, port))
@@ -82,8 +81,14 @@ def start_server(host='localhost', port=12345):
     des_key = generate_des_key()
     aes_key = generate_aes_key()
 
+
+
     server_socket.listen(4)
     print("Listening for incoming connections...")
+
+    # Start the chat server on a separate thread
+    chat_server_thread = threading.Thread(target=start_chat_server)
+    chat_server_thread.start()
 
     while True:
         clientsocket, (ip, port) = server_socket.accept()

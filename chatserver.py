@@ -1,60 +1,106 @@
-import socket
-import threading
-import time
+import socket, threading, select
 
 
-clients = []
-nicknames = []
+class Client:
+    def __init__(self,serverSocket):
+        (clientsockSend, (ipS, portS)) = serverSocket.accept()
+        self.Tsend = ClientThread(ipS,portS,clientsockSend,'send')
+        self.Tsend.start()
+        (clientsockRcv, (ipR, portR)) = serverSocket.accept()
+        self.Trcv = ClientThread(ipR,portR,clientsockRcv,'rcv')
+        self.Trcv.start()
 
 
+class ClientThread(threading.Thread):
+    clientSocketSend = []
+    clientSocketRcv = []
+    clientTRcv = []
+    clientTSend = []
+    i = 0
 
-def broadcast(msg):
-    for client in clients:
-        client.send(msg)
+    def __init__(self,ip,port,clientsocket,type):
+        threading.Thread.__init__(self)
+        self.ip = ip
+        self.port = port
+        self.csocket = clientsocket
+        self.type = type
+        self.id = ClientThread.i
+        print(self.i)
+        if self.type == 'rcv':
+            self.clientTRcv.append(self)
+            self.clientSocketRcv.append(clientsocket)
+            ClientThread.i +=1
+        else:
+            self.clientTSend.append(self)
+            self.clientSocketSend.append(clientsocket)
 
-def handle(client):
+        print("[+] New thread started for ",ip,":",str(port))
+
+    def run(self):
+        print("Connection from : ",self.ip,":",str(self.port))
+        if self.type == 'send':
+            self.csocket.send("Welcome to the multi-threaded server".encode())
+
+        else:
+            name = self.csocket.recv(2048).decode()
+            welcomeMsg = name.replace(" ", "") + " just joined the chat!"
+            print(welcomeMsg)
+
+            # self.clientTSend[self.id].newmember(welcomeMsg)
+
+            data = "dummydata"
+            while len(data):
+                data = self.csocket.recv(2048)
+                # print("Client(%s:%s) sent : %s"%(self.ip, str(self.port), data.decode()))
+                print("Client(%s:%s) sent : %s"%(self.ip, str(self.port), data))
+
+                # if data.decode().split(":")[1].replace(" ","") == "quit":
+                #     data = ''
+                #     print("QUIT")
+                # else:
+                self.sendtoall(data)
+
+            # self.clientSocketSend[self.id].send(str.encode("--------------------------Disconnected---------------------------"))
+            disconnectMsg = name + " disconnected from chat"
+            # self.sendtoall(disconnectMsg.encode())
+            print(disconnectMsg)
+            self.clientSocketSend[self.id].close()
+            ClientThread.clientSocketSend[self.id] = 0
+            self.csocket.close()
+            # data = name.replace(" ", "") + " just left the chat.."
+            # for client in self.clientSockets[::2]:
+            #     client.send(data.encode())
+            print("Client at ",self.ip," disconnected...")
+
+    def newmember(self,name):
+        for client in ClientThread.clientSocketSend:
+            if not isinstance(client, int):
+                client.send(name.encode())
+    
+
+
+    def sendtoall(self,data):
+        for client in ClientThread.clientSocketSend:
+            if not isinstance(client, int):
+                client.send(data)
+                print("Sent ", data, " to ", client)
+
+# host = "0.0.0.0"
+# port = 10000
+
+# serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+# serverSocket.bind((host, port))
+# while True:
+#     serverSocket.listen(4)
+#     print("Listening for incoming connections...")
+#     newClient = Client()
+
+def start_chat_server(host='localhost', port=10000):
+    serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    serverSocket.bind((host, port))
     while True:
-        try:
-            message = client.recv(1024)
-            print(f"{nicknames[clients.index(client)]}: {message}")
-            broadcast(message)
-        except:
-            index = clients.index(client)
-            clients.remove(client)
-            client.close()
-            nickname = nicknames[index]
-            nicknames.remove(nickname)
-            break
-
-def receive():
-    server= socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    host = "localhost"
-    server.bind((host, 5560))
-    server.listen()
-    while True:
-        client, address = server.accept()
-        print(f"Connected with {str(address)}!")
-        client.send("NICK".encode('utf-8'))
-        nickname = client.recv(1024).decode('utf-8')
-        print(f"client's name is " + nickname)
-        connected_clients="NEWCONN"
-
-
-        clients.append(client)
-        nicknames.append(nickname)
-        for i in nicknames:
-            connected_clients = connected_clients + " "+ i
-        print(connected_clients)
-        connected_clients = connected_clients+"$"
-        broadcast(connected_clients.encode('utf-8'))
-
-        broadcast(f"CHAT {nickname} connected to the server!\n$".encode('utf-8'))
-        client.send("CHAT You are now connected to the server\n$".encode('utf-8'))
-        thread = threading.Thread(target=handle, args=(client,))
-        thread.start()
-
-
-receive_thread = threading.Thread(target=receive)
-receive_thread.start()
-print("server running")
+        serverSocket.listen(4)
+        print("Listening for incoming connections...")
+        newClient = Client(serverSocket)
