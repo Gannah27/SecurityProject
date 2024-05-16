@@ -61,8 +61,8 @@ class ClientThread(threading.Thread):
                 "private": rsa_privatekey.export_key(),
                 "public": rsa_publickey.export_key()
             },
-            "DES": des_key,
-            "AES": aes_key
+            "DES": [des_key, iv_des],
+            "AES": [aes_key, iv_aes]
         }
 
 
@@ -77,9 +77,11 @@ def start_server(host='localhost', port=12345):
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind((host, port))
 
-    global des_key, aes_key
+    global des_key, aes_key, iv_des, iv_aes
     des_key = generate_des_key()
     aes_key = generate_aes_key()
+    iv_des = generate_des_iv()
+    iv_aes = generate_aes_iv()
 
 
 

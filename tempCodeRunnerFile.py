@@ -1,0 +1,1 @@
+  print(f"[*] Received from server: {response}")

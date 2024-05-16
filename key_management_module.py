@@ -3,6 +3,7 @@ from Crypto.Cipher import DES, AES
 from Crypto import Random
 import pickle
 import os
+import random
 
 # RSA Key Generation
 def generate_rsa_keys():
@@ -17,11 +18,14 @@ def generate_rsa_keys():
 def generate_des_key():
     # DES key must be exactly 8 bytes long.
     return Random.get_random_bytes(8)
-
+def generate_des_iv():
+    return Random.get_random_bytes(DES.block_size)
 # AES Key Generation
 def generate_aes_key():
     # AES key must be either 16, 24, or 32 bytes long.
     return Random.get_random_bytes(16)
+def generate_aes_iv():
+    return Random.get_random_bytes(AES.block_size)
 
 # Key Storage
 def store_keys(keys, filename):
