@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     newClient = Client()
     newClient.start()
-
+    flag=0
     #j = threading.Thread(target=newClient.receive())
     #j.start()
     ans = input("Are you a new user? [y/n]: ")
@@ -57,7 +57,8 @@ if __name__ == "__main__":
             response = newClient.send_credentials(username, password, 'verify')
 
             if response == "Log in successful":
-                clientchat.Client().start_chat()
+
+                flag=1
                 break
             else:
                 print("Please re-enter your credentials.")
@@ -68,8 +69,11 @@ if __name__ == "__main__":
             response = newClient.send_credentials(username, password, 'add')
             if response == "Sign up successful":
                 newClient.receive()
-                clientchat.Client().start_chat()
-
+                flag=1
                 break
             else:
                 print("Email already exists, please enter another email.")
+    if flag:
+        key=distribute_keys("client_keys.txt")
+
+        clientchat.Client(key).start_chat()
