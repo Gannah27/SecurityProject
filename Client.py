@@ -18,7 +18,6 @@ class Client(threading.Thread):
     def receive(self):
         received_data = b""
         while True:
-            try:
                 data = self.csocket.recv(4096)
                 if not data:
                     print("Connection closed")

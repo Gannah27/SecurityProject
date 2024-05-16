@@ -1,7 +1,5 @@
 from key_management_module import *
 import pickle
-from Crypto.PublicKey import ECC
-from Crypto.Util import asn1
 
 keys = distribute_keys('client_keys.txt')
 
@@ -9,14 +7,15 @@ keys = distribute_keys('client_keys.txt')
 
 for key in keys:
     if key == "RSA":
-        print(f"Private Key: {keys[key]['private'].decode('utf-8')}")  # Print the private key
-        print(f"Public Key: {keys[key]['public'].decode('utf-8')}")  # Print the public key
+        print(f"Private Key: {keys[key]['private']}")  # Print the private key
+        print(f"Public Key: {keys[key]['public']}")  # Print the public key
     elif key == "ECC":
         # Decode the private key
-        ecc_private_key = ECC.import_key(keys[key]['private'])
+        ecc_private_key = keys[key]['private']
 
         # Decode the public key
-        ecc_public_key = ECC.import_key(keys[key]['public'])
+        ecc_public_key = keys[key]['public']
+        ecc_key = keys[key]['key']
 
         # Print the decoded private and public keys
         print("Decoded ECC Private Key:")
