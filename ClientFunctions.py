@@ -55,7 +55,8 @@ class ClientSocket(threading.Thread):
     def decrypt_after_recieve(self,msg):
         if self.encryption == "RSA":
             mess = rsa_decrypt(msg, self.keys["private"])
-        else: 
+        else:
+            print("Decrypting ", self.encryption, " message")
             mess = decrypt_message(self.encryption, self.keys, self.iv, msg)
             mess = mess.decode('utf-8')
         return mess
@@ -94,20 +95,21 @@ class MyGUI(QMainWindow):
         key = distribute_keys('client_keys.txt')
         self.keys=key[self.encryption]
         self.ClientSocketRec.encryption = self.encryption
-        self.ClientSocketRec.keys = key[self.encryption][0]
         
         if self.encryption == "AES":
-            self.iv = self.keys[1]
             self.keys = self.keys[0]
+            self.ClientSocketRec.keys = self.keys
             b = str(self.keys[1]).encode()
             # Ensure the byte string is exactly 8 bytes long
             b = b.ljust(16, b'\0')  # pad with zeros if necessary
             b = b[:16]  # truncate to 8 bytes if necessary
+            self.iv = b
             self.ClientSocketRec.iv = b
             print(self.keys, self.iv)
             print("AES")
         elif self.encryption == "DES":
             self.keys = self.keys[0]
+            self.ClientSocketRec.keys = self.keys
             b = str(self.keys[1]).encode()
             # Ensure the byte string is exactly 8 bytes long
             b = b.ljust(8, b'\0')  # pad with zeros if necessary
