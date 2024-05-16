@@ -1,9 +1,9 @@
 from Crypto.PublicKey import ElGamal
 import common
-def to_long(plaintext):
+"""def to_long(plaintext):
     for i in plaintext:
         lnumber
-    return lnumber
+    return lnumber"""
 
 def generate_ecc_key():
     key = ElGamal.generate(256,None)
